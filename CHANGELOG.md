@@ -6,6 +6,8 @@ This project follows semantic versioning once public releases are published.
 
 ## Unreleased
 
+## v0.1.1
+
 - Added user-friendly README structure.
 - Added `.env` and `--env-file` configuration support.
 - Added release workflow and installer script.

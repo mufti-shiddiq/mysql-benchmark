@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/
 Install a specific version:
 
 ```bash
-MYSQL_BENCHMARK_VERSION=v0.1.0 sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
+MYSQL_BENCHMARK_VERSION=v0.1.1 sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
 ```
 
 Then run:
@@ -385,8 +385,8 @@ go build ./...
 Release tags build Linux and macOS archives for amd64 and arm64 through GitHub Actions:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 Maintainer release notes are in [docs/release.md](./docs/release.md).

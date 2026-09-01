@@ -25,8 +25,8 @@ ls dist/*.tar.gz
 Use semantic version tags:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 Pushing a `v*` tag starts `.github/workflows/release.yml`.
@@ -44,7 +44,7 @@ After the GitHub Action completes, confirm the release includes:
 Then test the installer:
 
 ```bash
-MYSQL_BENCHMARK_VERSION=v0.1.0 sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
+MYSQL_BENCHMARK_VERSION=v0.1.1 sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
 mysql-benchmark --version
 ```
 
