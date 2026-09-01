@@ -1,5 +1,6 @@
 /mysql-benchmark
 /dist/
+.tmp/
 .env
 .env.*
 !.env.example

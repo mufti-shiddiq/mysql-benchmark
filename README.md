@@ -21,6 +21,21 @@ A local CLI for comparing MySQL database performance from the machine where the 
 
 ## Quick Start
 
+Install the latest release binary:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh | sh
+mysql-benchmark
+```
+
+Or install to a user-writable directory:
+
+```bash
+INSTALL_DIR="$HOME/.local/bin" sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
+```
+
+Build from source when developing:
+
 ```bash
 git clone https://github.com/mufti-shiddiq/mysql-benchmark.git
 cd mysql-benchmark
@@ -30,10 +45,10 @@ go build -o mysql-benchmark ./cmd/mysql-benchmark
 
 ## Requirements
 
-- Go 1.22 or newer for building from source.
 - A reachable MySQL-compatible database.
 - An existing database/schema name. The CLI does not create databases automatically.
 - A user with permission to create, alter, insert into, update, delete from, and drop benchmark-owned tables.
+- Go 1.22 or newer only when building from source.
 
 ## Interactive Usage
 
@@ -169,14 +184,15 @@ This repository does not redistribute Sakila SQL files, TPC-H tools, or generate
 make build
 make test
 make lint
+make release-snapshot
 go build ./...
 ```
 
-Cross-compile examples:
+Release tags build Linux and macOS archives for amd64 and arm64 through GitHub Actions:
 
 ```bash
-GOOS=linux GOARCH=amd64 go build -o dist/mysql-benchmark-linux-amd64 ./cmd/mysql-benchmark
-GOOS=linux GOARCH=arm64 go build -o dist/mysql-benchmark-linux-arm64 ./cmd/mysql-benchmark
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 ## Roadmap
