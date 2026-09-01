@@ -9,7 +9,7 @@ A local CLI for comparing MySQL database performance from the machine where the 
 ## Features
 
 - Interactive CLI and non-interactive flags.
-- Environment variable support for automation.
+- `.env`, environment variable, and CLI flag support for automation.
 - Safe database validation before setup.
 - Explicit confirmation for non-empty databases unless `--force` is used.
 - Warmup and repeated measured iterations.
@@ -43,6 +43,28 @@ go build -o mysql-benchmark ./cmd/mysql-benchmark
 
 The CLI prompts for host, port, database, username, password, benchmark mode, warmup, and iterations when values are missing.
 
+## .env Usage
+
+Copy `.env.example` to `.env` and adjust the connection values:
+
+```bash
+cp .env.example .env
+```
+
+The CLI reads `.env` by default when it exists. You can also pass a custom file:
+
+```bash
+./mysql-benchmark --env-file production.env --mode sakila
+```
+
+Configuration precedence is:
+
+```text
+defaults < .env file < shell environment < CLI flags
+```
+
+Avoid storing passwords in `.env` on shared machines. Prefer the interactive password prompt for local use, or `DB_PASSWORD` for automation when needed.
+
 ## CLI Usage
 
 ```bash
@@ -68,6 +90,7 @@ Flags:
 --warmup
 --iterations
 --output json|results.json
+--env-file .env
 --force
 --help
 --version
@@ -114,6 +137,7 @@ Do not compare `Laptop -> Database A` with `VPS -> Database B` for network-sensi
 - Passwords are never printed.
 - JSON output does not include passwords.
 - DSNs containing credentials are not logged.
+- `.env` is ignored by git; `.env.example` is safe to commit.
 - Non-empty databases require confirmation unless `--force` is set.
 - Benchmark tables use explicit prefixes.
 
