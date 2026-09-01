@@ -14,6 +14,7 @@ This repository contains a local MySQL benchmarking CLI written in Go.
 - Run `go test ./...`, `go vet ./...`, and `go build ./...` before considering changes complete.
 - Release binaries are produced by `.github/workflows/release.yml` for Linux/macOS amd64/arm64 when a `v*` tag is pushed.
 - Keep `scripts/install.sh` compatible with POSIX `sh`, Ubuntu VPS defaults, `curl` or `wget`, and user-writable `INSTALL_DIR`.
+- Keep the README user-first: lead with install/run, explain safety plainly, and keep benchmark interpretation practical.
 - Update this document whenever repository behavior, commands, safety rules, or project layout changes.
 
 ## Commands

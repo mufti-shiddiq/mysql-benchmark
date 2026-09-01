@@ -1,99 +1,178 @@
 # MySQL Benchmark
 
-A local CLI for comparing MySQL database performance from the machine where the benchmark runs, typically an Ubuntu VPS near your application.
+Benchmark MySQL from the same machine your application uses.
 
-## Overview
+`mysql-benchmark` is a small CLI for comparing MySQL providers, plans, or regions from an Ubuntu VPS or any other app server. It measures the parts that usually matter in real deployments: connection latency, simple queries, joins, aggregations, writes, transactions, and analytical queries.
 
-`mysql-benchmark` measures connection/query latency, relational query performance, joins, aggregation, writes, transactions, and analytical workloads. It is designed for comparative testing from the same client location to different MySQL providers.
+It runs locally. It does not send results anywhere.
 
-## Features
+## When To Use This
 
-- Interactive CLI and non-interactive flags.
-- `.env`, environment variable, and CLI flag support for automation.
-- Safe database validation before setup.
-- Explicit confirmation for non-empty databases unless `--force` is used.
-- Warmup and repeated measured iterations.
-- Min, average, p50, p95, p99, and max metrics.
-- Sakila-style relational workload.
-- TPC-H-inspired analytical workload.
-- Terminal table output and JSON output.
-- No telemetry and no automatic result upload.
+Use this when you want to answer questions like:
 
-## Quick Start
+- Is Provider A faster than Provider B from my VPS?
+- How much latency do I pay when the database is in another region?
+- Are joins or analytical queries noticeably slower on this MySQL plan?
+- Is write/transaction latency acceptable from my app server?
+
+For fair comparisons, run every test from the same machine. A benchmark from your laptop is not comparable to a benchmark from your production VPS.
+
+```text
+Same Ubuntu VPS
+  -> MySQL Provider A
+  -> MySQL Provider B
+```
+
+## Install
 
 Install the latest release binary:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh | sh
+```
+
+Then run:
+
+```bash
 mysql-benchmark
 ```
 
-Or install to a user-writable directory:
+If `/usr/local/bin` requires sudo, the installer will ask for it. To install without sudo:
 
 ```bash
 INSTALL_DIR="$HOME/.local/bin" sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
 ```
 
-Build from source when developing:
-
-```bash
-git clone https://github.com/mufti-shiddiq/mysql-benchmark.git
-cd mysql-benchmark
-go build -o mysql-benchmark ./cmd/mysql-benchmark
-./mysql-benchmark
-```
+Make sure `$HOME/.local/bin` is in your `PATH`.
 
 ## Requirements
 
+You need:
+
 - A reachable MySQL-compatible database.
-- An existing database/schema name. The CLI does not create databases automatically.
-- A user with permission to create, alter, insert into, update, delete from, and drop benchmark-owned tables.
-- Go 1.22 or newer only when building from source.
+- An existing database/schema. The tool does not create databases automatically.
+- A MySQL user allowed to create, insert, update, delete, and drop benchmark-owned tables.
 
-## Interactive Usage
+You only need Go if you want to build from source.
 
-```bash
-./mysql-benchmark
-```
+## First Run
 
-The CLI prompts for host, port, database, username, password, benchmark mode, warmup, and iterations when values are missing.
-
-## .env Usage
-
-Copy `.env.example` to `.env` and adjust the connection values:
+Interactive mode is the easiest way to start:
 
 ```bash
-cp .env.example .env
+mysql-benchmark
 ```
 
-The CLI reads `.env` by default when it exists. You can also pass a custom file:
+The CLI asks for:
+
+- host
+- port
+- database
+- username
+- password
+- benchmark mode
+
+Passwords are not printed and are not included in JSON output.
+
+For local MySQL, use TCP explicitly:
 
 ```bash
-./mysql-benchmark --env-file production.env --mode sakila
+mysql-benchmark --host 127.0.0.1 --port 3306 --database benchmark --user root
 ```
 
-Configuration precedence is:
+If the database does not exist yet, create it first:
+
+```sql
+CREATE DATABASE benchmark;
+```
+
+## Configuration
+
+You can configure the CLI in three ways:
+
+- interactive prompts
+- `.env` file
+- shell environment variables
+- CLI flags
+
+Precedence is:
 
 ```text
 defaults < .env file < shell environment < CLI flags
 ```
 
-Avoid storing passwords in `.env` on shared machines. Prefer the interactive password prompt for local use, or `DB_PASSWORD` for automation when needed.
-
-## CLI Usage
+Create a local `.env`:
 
 ```bash
-DB_PASSWORD='secret' ./mysql-benchmark \
-  --host db.example.com \
-  --port 3306 \
-  --database benchmark \
-  --user benchmark \
-  --mode both \
-  --warmup 5 \
-  --iterations 30
+cp .env.example .env
 ```
 
-Flags:
+Example:
+
+```env
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=benchmark
+DB_USER=root
+```
+
+The CLI reads `.env` by default. You can also pass another file:
+
+```bash
+mysql-benchmark --env-file production.env --mode sakila
+```
+
+For automation, provide the password through `DB_PASSWORD`:
+
+```bash
+DB_PASSWORD='secret' mysql-benchmark \
+  --host db.example.com \
+  --database benchmark \
+  --user benchmark \
+  --mode both
+```
+
+Avoid passing passwords as CLI arguments because they can appear in shell history or process listings.
+
+## Common Commands
+
+Run Sakila-style workload:
+
+```bash
+mysql-benchmark --mode sakila
+```
+
+Run TPC-H-inspired workload:
+
+```bash
+mysql-benchmark --mode tpch
+```
+
+Run both:
+
+```bash
+mysql-benchmark --mode both
+```
+
+Write JSON to stdout:
+
+```bash
+mysql-benchmark --output json
+```
+
+Write JSON to a file:
+
+```bash
+mysql-benchmark --output results.json
+```
+
+Use fewer iterations for a quick smoke test:
+
+```bash
+mysql-benchmark --warmup 1 --iterations 3
+```
+
+## Flags
 
 ```text
 --host
@@ -111,72 +190,146 @@ Flags:
 --version
 ```
 
-Do not pass passwords in shell arguments. Use the interactive password prompt or `DB_PASSWORD`.
+## Safety
+
+The tool uses benchmark-owned table prefixes:
+
+- `benchmark_sakila_`
+- `benchmark_tpch_`
+
+If the selected database is not empty, the CLI asks for confirmation before preparing benchmark data. The default answer is no.
+
+Use `--force` only in automation when you understand that benchmark-owned tables may be dropped and recreated:
+
+```bash
+mysql-benchmark --mode both --force
+```
+
+The tool should be run against a dedicated benchmark database, not an application production schema.
 
 ## Benchmark Modes
 
-### Sakila
+### Sakila-style
 
-Creates a Sakila-style relational dataset with benchmark-owned tables. It tests round trips, simple indexed selects, two-table joins, multi-table joins, complex joins, aggregation, sorting, subqueries, inserts, updates, deletes, and transactions.
+This workload creates synthetic relational tables inspired by the shape of Sakila. It tests:
 
-### TPC-H
+- `SELECT 1` latency
+- indexed reads
+- two-table joins
+- multi-table joins
+- complex joins
+- `COUNT`, `SUM`, `AVG`, and `GROUP BY`
+- sorting with `ORDER BY` and `LIMIT`
+- subqueries
+- insert, update, delete, and transaction latency
 
-Creates a TPC-H-inspired analytical dataset with benchmark-owned tables and runs query cases named Q01 through Q22 where practical for MySQL. This is not an official TPC-H result and should not be described as TPC-H compliant.
+### TPC-H-inspired
 
-## Benchmark Methodology
+This workload creates synthetic analytical tables using the familiar TPC-H table families:
 
-Each benchmark case runs warmup iterations first. Warmup timings are discarded. The measured iterations are then timed and summarized with min, average, p50, p95, p99, and max in milliseconds.
+- region
+- nation
+- supplier
+- customer
+- part
+- partsupp
+- orders
+- lineitem
 
-Setup and dataset loading time are reported separately from query timings.
+It runs query cases named Q01 through Q22 where practical for MySQL. This is a TPC-H-inspired workload, not an official TPC-H compliant result.
 
-`SELECT 1 latency` represents client/server round-trip time plus MySQL processing overhead. It is not pure TCP network RTT.
+## Methodology
 
-## Understanding Results
+Each benchmark case runs:
 
-Results depend on network distance, MySQL configuration, indexes, storage engine, CPU, RAM, dataset size, and cache state. Treat numbers as comparative signals, not absolute production guarantees.
+1. warmup iterations
+2. measured iterations
+3. metric calculation
+
+Warmup timings are discarded. Setup time is separate from query timing.
+
+Default settings:
+
+```text
+warmup: 5
+iterations: 30
+```
+
+Reported metrics:
+
+- min
+- avg
+- p50
+- p95
+- p99
+- max
+
+All timings are shown in milliseconds.
+
+`SELECT 1 latency` means client/server round trip plus MySQL processing overhead. It is not pure TCP network RTT.
+
+## Reading Results
+
+Use the results comparatively. They are affected by:
+
+- distance between app server and database
+- MySQL version and configuration
+- CPU, RAM, and storage
+- indexes and query plan choices
+- warm cache vs cold cache
+- concurrent workload on the database
+- network jitter
+
+Run the same benchmark more than once if you need confidence. For provider comparisons, run from the same VPS and change only the database target.
 
 ## Troubleshooting
 
-For a local MySQL server, prefer TCP explicitly:
-
-```bash
-./mysql-benchmark --host 127.0.0.1 --port 3306 --database benchmark --user root
-```
-
-If you see access denied, verify the password and confirm that the MySQL user can connect over TCP from the benchmark machine. Some local installations configure `root` for socket-only authentication or use a different generated password.
-
-If the database does not exist, create it first:
-
-```sql
-CREATE DATABASE benchmark;
-```
-
-If you run from a sandboxed terminal and see `operation not permitted`, run the binary from a normal shell or allow local network access.
-
-## Comparing Database Providers
-
-Run comparisons from the same machine and location:
+Access denied:
 
 ```text
-Ubuntu VPS
-  -> Provider A MySQL
-  -> Provider B MySQL
+access denied
 ```
 
-Do not compare `Laptop -> Database A` with `VPS -> Database B` for network-sensitive measurements.
+Check username, password, and whether the MySQL user can connect from the benchmark host. Some local MySQL installs configure `root` for socket-only authentication.
 
-## Security
+Database missing:
 
-- Passwords are never printed.
-- JSON output does not include passwords.
-- DSNs containing credentials are not logged.
-- `.env` is ignored by git; `.env.example` is safe to commit.
-- Non-empty databases require confirmation unless `--force` is set.
-- Benchmark tables use explicit prefixes.
+```text
+database "benchmark" does not exist
+```
+
+Create the database manually, then rerun the benchmark.
+
+Connection refused or timeout:
+
+```text
+unable to reach MySQL
+```
+
+Check host, port, firewall rules, bind address, and whether MySQL is running.
+
+Sandboxed terminal:
+
+```text
+operation not permitted
+```
+
+Run the binary from a normal shell or allow local network access.
 
 ## Third-party Datasets
 
-This repository does not redistribute Sakila SQL files, TPC-H tools, or generated TPC-H data. See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
+This repository does not redistribute Oracle Sakila SQL files, TPC-H tools, or generated TPC-H data. The CLI generates benchmark-owned synthetic data locally.
+
+See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md).
+
+## Build From Source
+
+```bash
+git clone https://github.com/mufti-shiddiq/mysql-benchmark.git
+cd mysql-benchmark
+go build -o mysql-benchmark ./cmd/mysql-benchmark
+./mysql-benchmark
+```
 
 ## Development
 
