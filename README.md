@@ -120,6 +120,24 @@ Setup and dataset loading time are reported separately from query timings.
 
 Results depend on network distance, MySQL configuration, indexes, storage engine, CPU, RAM, dataset size, and cache state. Treat numbers as comparative signals, not absolute production guarantees.
 
+## Troubleshooting
+
+For a local MySQL server, prefer TCP explicitly:
+
+```bash
+./mysql-benchmark --host 127.0.0.1 --port 3306 --database benchmark --user root
+```
+
+If you see access denied, verify the password and confirm that the MySQL user can connect over TCP from the benchmark machine. Some local installations configure `root` for socket-only authentication or use a different generated password.
+
+If the database does not exist, create it first:
+
+```sql
+CREATE DATABASE benchmark;
+```
+
+If you run from a sandboxed terminal and see `operation not permitted`, run the binary from a normal shell or allow local network access.
+
 ## Comparing Database Providers
 
 Run comparisons from the same machine and location:
