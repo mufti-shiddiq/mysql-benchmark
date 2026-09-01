@@ -14,7 +14,9 @@ This repository contains a local MySQL benchmarking CLI written in Go.
 - Run `go test ./...`, `go vet ./...`, and `go build ./...` before considering changes complete.
 - Release binaries are produced by `.github/workflows/release.yml` for Linux/macOS amd64/arm64 when a `v*` tag is pushed.
 - Keep `scripts/install.sh` compatible with POSIX `sh`, Ubuntu VPS defaults, `curl` or `wget`, and user-writable `INSTALL_DIR`.
+- Keep `scripts/configure-github.sh` compatible with GitHub CLI and use it for repo metadata/topics/branch protection when authenticated access is available.
 - Keep the README user-first: lead with install/run, explain safety plainly, and keep benchmark interpretation practical.
+- Keep open-source community files current: `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, issue templates, PR template, and docs under `docs/`.
 - Update this document whenever repository behavior, commands, safety rules, or project layout changes.
 
 ## Commands
@@ -24,3 +26,4 @@ This repository contains a local MySQL benchmarking CLI written in Go.
 - `make lint` runs `go vet`.
 - `make run` starts the CLI through `go run`.
 - `make release-snapshot` builds Linux amd64/arm64 release archives locally.
+- `scripts/configure-github.sh` configures public GitHub metadata and branch protection after `gh auth login`.

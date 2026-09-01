@@ -1,5 +1,9 @@
 # MySQL Benchmark
 
+[![CI](https://github.com/mufti-shiddiq/mysql-benchmark/actions/workflows/ci.yml/badge.svg)](https://github.com/mufti-shiddiq/mysql-benchmark/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/mufti-shiddiq/mysql-benchmark)](https://github.com/mufti-shiddiq/mysql-benchmark/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 Benchmark MySQL from the same machine your application uses.
 
 `mysql-benchmark` is a small CLI for comparing MySQL providers, plans, or regions from an Ubuntu VPS or any other app server. It measures the parts that usually matter in real deployments: connection latency, simple queries, joins, aggregations, writes, transactions, and analytical queries.
@@ -29,6 +33,12 @@ Install the latest release binary:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh | sh
+```
+
+Install a specific version:
+
+```bash
+MYSQL_BENCHMARK_VERSION=v0.1.0 sh -c "$(curl -fsSL https://raw.githubusercontent.com/mufti-shiddiq/mysql-benchmark/main/scripts/install.sh)"
 ```
 
 Then run:
@@ -166,6 +176,33 @@ Write JSON to a file:
 mysql-benchmark --output results.json
 ```
 
+Example JSON shape:
+
+```json
+{
+  "database": {
+    "host": "db.example.com",
+    "port": 3306,
+    "database": "benchmark",
+    "mysql_version": "8.0.43"
+  },
+  "benchmark": "sakila",
+  "scale_factor": 1,
+  "configuration": {
+    "warmup": 5,
+    "iterations": 30
+  },
+  "results": [
+    {
+      "name": "select_1_latency",
+      "p50_ms": 3.12,
+      "p95_ms": 4.21,
+      "p99_ms": 5.82
+    }
+  ]
+}
+```
+
 Use fewer iterations for a quick smoke test:
 
 ```bash
@@ -282,6 +319,8 @@ Use the results comparatively. They are affected by:
 
 Run the same benchmark more than once if you need confidence. For provider comparisons, run from the same VPS and change only the database target.
 
+For more detail, see [docs/methodology.md](./docs/methodology.md).
+
 ## Troubleshooting
 
 Access denied:
@@ -333,6 +372,8 @@ go build -o mysql-benchmark ./cmd/mysql-benchmark
 
 ## Development
 
+Contributions are welcome. Start with [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ```bash
 make build
 make test
@@ -346,6 +387,17 @@ Release tags build Linux and macOS archives for amd64 and arm64 through GitHub A
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
+```
+
+Maintainer release notes are in [docs/release.md](./docs/release.md).
+
+Security issues should be reported privately. See [SECURITY.md](./SECURITY.md).
+
+Repository metadata can be configured with GitHub CLI after authentication:
+
+```bash
+gh auth login
+scripts/configure-github.sh
 ```
 
 ## Roadmap

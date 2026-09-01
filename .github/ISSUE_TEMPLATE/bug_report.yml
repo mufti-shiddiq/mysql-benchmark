@@ -1,0 +1,46 @@
+name: Bug report
+description: Report something that is broken or confusing.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste passwords, full DSNs, or private hostnames unless you are comfortable making them public.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the command you ran, with secrets removed.
+      placeholder: |
+        mysql-benchmark --host 127.0.0.1 --database benchmark --user root --mode sakila
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: mysql-benchmark version
+      placeholder: "0.1.0"
+  - type: input
+    id: mysql-version
+    attributes:
+      label: MySQL version
+      placeholder: "8.0.43"
+  - type: input
+    id: os-arch
+    attributes:
+      label: OS and architecture
+      placeholder: "Ubuntu 24.04, linux/amd64"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output
+      description: Paste relevant output with secrets removed.
+      render: text
