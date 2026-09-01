@@ -1,0 +1,6 @@
+/mysql-benchmark
+/dist/
+*.test
+*.out
+*.log
+.DS_Store
